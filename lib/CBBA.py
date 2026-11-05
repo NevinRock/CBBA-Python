@@ -74,7 +74,8 @@ class CBBA(object):
             print(e)
 
     def settings(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
-                 max_depth: int, time_window_flag: bool):
+                 max_depth: int, time_window_flag: bool, event_triggered: bool = False,
+                 communication_graph: list = None):
         """
         Initialize some lists given new AgentList, TaskList, and WorldInfoInput.
         """
@@ -93,9 +94,19 @@ class CBBA(object):
         self.space_limit_y = self.WorldInfo.limit_y
         self.space_limit_z = self.WorldInfo.limit_z
 
-        # Fully connected graph
-        # 2D list
-        self.graph = np.logical_not(np.identity(self.num_agents)).tolist()
+        # A fully connected graph is the default used by the original examples.
+        if communication_graph is None:
+            self.graph = np.logical_not(np.identity(self.num_agents)).tolist()
+        else:
+            if len(communication_graph) != self.num_agents or any(
+                    len(row) != self.num_agents for row in communication_graph):
+                raise ValueError("communication_graph must be an N x N matrix")
+            self.graph = [[bool(value) for value in row] for row in communication_graph]
+            if any(self.graph[i][i] for i in range(self.num_agents)):
+                raise ValueError("communication_graph cannot contain self-links")
+            if any(self.graph[i][j] != self.graph[j][i]
+                   for i in range(self.num_agents) for j in range(self.num_agents)):
+                raise ValueError("communication_graph must be undirected")
 
         # initialize these properties
         self.bundle_list = [[-1] * self.max_depth for _ in range(self.num_agents)]
@@ -108,18 +119,35 @@ class CBBA(object):
         self.winners_list = [[-1] * self.num_tasks for _ in range(self.num_agents)]
         self.winner_bid_list = [[-1] * self.num_tasks for _ in range(self.num_agents)]
 
+        # ED-CBBA compares the consensus state to the last state each agent sent.
+        # Candidate bids (bid_list) are local and are not part of a broadcast.
+        self.event_triggered = event_triggered
+        self.last_sent_winners = copy.deepcopy(self.winners_list)
+        self.last_sent_bids = copy.deepcopy(self.winner_bid_list)
+        self.broadcast_history = []
+        self.broadcast_agents_history = []
+        self.total_broadcasts = 0
+        self.iterations = 0
+
         self.agent_index_list = []
         for n in range(self.num_agents):
             self.agent_index_list.append(self.AgentList[n].agent_id)
 
     def solve(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
-              max_depth: int, time_window_flag: bool):
+              max_depth: int, time_window_flag: bool, event_triggered: bool = False,
+              communication_graph: list = None, incumbent_owners: dict = None,
+              incumbency_bonus: float = 0.0):
         """
         Main CBBA Function
         """
 
         # Initialize some lists given AgentList, TaskList, and WorldInfoInput.
-        self.settings(AgentList, TaskList, WorldInfoInput, max_depth, time_window_flag)
+        self.settings(AgentList, TaskList, WorldInfoInput, max_depth, time_window_flag,
+                      event_triggered, communication_graph)
+        if incumbency_bonus < 0:
+            raise ValueError("incumbency_bonus must be nonnegative")
+        self.incumbent_owners = incumbent_owners or {}
+        self.incumbency_bonus = incumbency_bonus
 
         # Initialize working variables
         # Current iteration
@@ -131,6 +159,7 @@ class CBBA(object):
 
         # Main CBBA loop (runs until convergence)
         while not done_flag:
+            self.iterations = iter_idx
 
             # 1. Communicate
             # Perform consensus on winning agents and bid values (synchronous)
@@ -356,6 +385,16 @@ class CBBA(object):
         z = copy.deepcopy(old_z)
         y = copy.deepcopy(old_y)
 
+        if self.event_triggered:
+            senders = [k for k in range(self.num_agents)
+                       if old_z[k] != self.last_sent_winners[k]
+                       or old_y[k] != self.last_sent_bids[k]]
+        else:
+            senders = list(range(self.num_agents))
+        self.broadcast_history.append(len(senders))
+        self.broadcast_agents_history.append(senders.copy())
+        self.total_broadcasts += len(senders)
+
         epsilon = 10e-6
 
         # Start communication between agents
@@ -363,7 +402,7 @@ class CBBA(object):
         # receiver = i
         # task     = j
 
-        for k in range(self.num_agents):
+        for k in senders:
             for i in range(self.num_agents):
                 if self.graph[k][i] == 1:
                     for j in range(self.num_tasks):
@@ -535,6 +574,9 @@ class CBBA(object):
         # Copy data
         self.winners_list = copy.deepcopy(z)
         self.winner_bid_list = copy.deepcopy(y)
+        for k in senders:
+            self.last_sent_winners[k] = old_z[k]
+            self.last_sent_bids[k] = old_y[k]
         return time_mat_new
 
     def compute_bid(self, idx_agent: int, feasibility: list):
@@ -598,6 +640,8 @@ class CBBA(object):
                             Task_temp = self.TaskList[idx_task]
                             [score, min_start, max_start] = self.scoring_compute_score(
                                 idx_agent, Task(**Task_temp.__dict__), task_prev, time_prev, task_next, time_next)
+                            if self.incumbent_owners.get(Task_temp.task_id) == self.AgentList[idx_agent].agent_id:
+                                score *= 1.0 + self.incumbency_bonus
 
                             if self.time_window_flag:
                                 # if tasks have time window
