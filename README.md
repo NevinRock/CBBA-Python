@@ -1,175 +1,163 @@
-# CBBA-Python
-This is a Python implementation of Consensus-Based Bundle Algorithm (CBBA).
+# CBBA-Python: event-driven communication and failure re-auction
 
-You can see more details about CBBA from these papers.
+This repository implements the Consensus-Based Bundle Algorithm (CBBA) for
+multi-robot task allocation. It also includes an event-driven communication
+mode based on [Sao et al., *Event Driven CBBA with Reduced Communication*
+(2025)](https://arxiv.org/abs/2509.06481), plus a discrete-time experiment in
+which robot failures and communication loss trigger re-auction.
 
-* [Choi, H.-L., Brunet, L., and How, J. P., “Consensus-Based Decentralized Auctions for Robust Task Allocation,” IEEE Transactions on Robotics, vol. 25, Aug. 2009, pp. 912–926.](https://ieeexplore.ieee.org/abstract/document/5072249?casa_token=zYvs9usD3FYAAAAA:jz0SmSso6T5l107pHGJgIQhVNP3S4NEnnIPi6sRC--8aealzVFinApRitUzhISlprmsPjcr3)
+The original capabilities remain unchanged: `quad` agents bid on `track`
+tasks, and `car` agents bid on `rescue` tasks. Each agent has a position and
+travel speed; each task has a location, value, and optional time window.
 
-* [Brunet, L., Choi, H.-L., and How, J. P., “Consensus-Based Auction Approaches for Decentralized Task Assignment,” AIAA Guidance, Navigation, and Control Conference (GNC), Honolulu, HI: 2008.](https://arc.aiaa.org/doi/abs/10.2514/6.2008-6839)
+## Install
 
-Require:
-Python >= 3.7
+The experiments below were run with Python 3.14.9 on Linux. Create a virtual
+environment from the repository root:
 
-This repo has been tested with:
-* Python 3.9.1, macOS 11.2.1, numpy 1.20.1, matplotlib 3.3.4
-* python 3.8.5, Ubuntu 20.04.2 LTS, numpy 1.20.1, matplotlib 3.3.4
-
-
-Dependencies
-============
-For Python:
-* [numpy](https://numpy.org/)
-* [matplotlib](https://matplotlib.org/)
-
-```
-$ pip3 install numpy matplotlib
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
+`requirements.txt` pins NumPy, Matplotlib, and PyQt6 to the versions used for
+the reported runs. PyQt6 provides interactive plot windows; the experiment
+scripts save PNG files and also run without a display.
 
-Usage
-=====
+## Run the examples
 
-The parameters for Tasks and Agents are written in a configuration json file.
-* `AGENT_TYPES`: agent type.
-* `TASK_TYPES`: task type. The i-th task type is associated with the i-th agent type.
-* `NOM_VELOCITY`: the average speed of agent [m/s].
-* `TASK_VALUE`: the value/reward of task. With larger value, the task is more important than others.
-* `START_TIME`: the starting timestamp of task [sec].
-* `END_TIME`: the enging timestamp of task [sec].
-* `DURATION`: the duration/time window of task [sec]. An agent needs to arrive at a task before the starting time and stays there until the ending time to be counted as complete a task.
+| Command | What it runs |
+| --- | --- |
+| `.venv/bin/python test/run_cbba_example_01.py` | Original CBBA with task time windows |
+| `.venv/bin/python test/run_cbba_example_02.py` | Original CBBA with zero task duration |
+| `.venv/bin/python test/run_cbba_example_03.py` | Original CBBA without time windows |
+| `.venv/bin/python test/run_ed_cbba_example.py` | Seeded CBBA versus ED-CBBA comparison |
+| `.venv/bin/python test/run_failure_experiment.py` | Failure, silence, recovery, and re-auction simulation |
+| `./run_gui.sh` | Open the first original example in Qt plot windows |
 
-An example `config_example_01.json`:
-```json
-{
-    "AGENT_TYPES": ["quad", "car"],
-    "TASK_TYPES": ["track", "rescue"],
+Run these commands from the repository root. For the original examples on a
+headless machine, prefix the command with `MPLBACKEND=Agg`.
 
-    "QUAD_DEFAULT": {
-        "NOM_VELOCITY": 2
-    },
+The main API is `CBBA.solve(agents, tasks, world, max_depth,
+time_window_flag, ...)`. It returns `path_list` (task IDs in execution order
+for each agent) and `times_list` (planned task start times). The solver uses a
+fully connected communication graph by default; a symmetric adjacency matrix
+can be supplied with `communication_graph=`.
 
-    "CAR_DEFAULT": {
-        "NOM_VELOCITY": 2
-    },
-    
-    "TRACK_DEFAULT": {
-        "TASK_VALUE": 100,
-        "START_TIME": 0,
-        "END_TIME": 150,
-        "DURATION": 15
-    },
+## ED-CBBA communication trigger
 
-    "RESCUE_DEFAULT": {
-        "TASK_VALUE": 100,
-        "START_TIME": 0,
-        "END_TIME": 150,
-        "DURATION": 5
-    }
-}
+Set `event_triggered=True` in `CBBA.solve()` to enable the event rule from
+Equation (7) of Sao et al. At the start of each synchronous consensus round,
+agent `i` broadcasts if its winner list or winning-bid list differs from the
+last version it broadcast. An agent that does not broadcast still receives
+its neighbours' messages. The original every-agent broadcast mode remains
+the default.
+
+`solver.broadcast_agents_history` records the sending agent IDs in each
+round. `solver.broadcast_history` records the number of senders per round,
+and `solver.total_broadcasts` is their sum. A broadcast counts once per
+sending agent, regardless of the number of neighbours.
+
+### Reproducible comparison
+
+The seeded example uses 10 homogeneous agents, 20 tasks, a maximum bundle
+size of 3, a 100 m × 100 m area, and a connected graph with 10 m radio range.
+It runs both modes on the same generated positions and tasks (seed 7).
+
+| Metric | Standard CBBA | ED-CBBA |
+| --- | ---: | ---: |
+| Consensus rounds | 16 | 16 |
+| Total broadcasts | 160 | 60 |
+| Task assignment | Same | Same |
+
+ED-CBBA sent **62.5% fewer broadcasts** in this one seeded run. Its per-round
+broadcast counts were `[0, 10, 10, 10, 10, 9, 9, 2, 0, 0, 0, 0, 0, 0, 0, 0]`.
+Each orange cross below is one actual ED-CBBA broadcast; the lower panel
+shows the trigger frequency per consensus round.
+
+![ED-CBBA event-trigger distribution](doc/ed_cbba_trigger_distribution.png)
+
+The horizontal axis is **logical consensus time**, not wall-clock seconds:
+this solver performs offline auctions and has no physical communication clock.
+
+## Failure-triggered re-auction experiment
+
+`test/run_failure_experiment.py` runs a separate seeded simulation with 8
+agents (4 `quad`, 4 `car`) and 20 tasks (10 `track`, 10 `rescue`). Every task's
+unfinished work is retained if its agent fails, and all unfinished tasks are
+auctioned again after failure is suspected. An online incumbent receives a
+10% bid bonus to discourage needless handoffs. Completed tasks stay complete.
+
+The event monitor uses the following rules:
+
+| Event | Detection | Action |
+| --- | --- | --- |
+| E1: neighbour disappears | Its communication link vanishes | Mark as potentially unavailable |
+| E2: prolonged silence | No direct or relayed heartbeat for 6 ticks | Exclude the agent and re-auction |
+| E1: neighbour joins | A link returns | Re-auction the unfinished tasks |
+
+Heartbeats are sent every 2 simulation ticks. At tick 6, each *working*
+agent is sampled once for permanent failure with probability 10%. The
+sampling preserves at least one live agent of each type. At tick 20, each
+connected agent is sampled once for a 4-tick communication outage with
+probability 5%. These are episode events, not probabilities applied on every
+tick.
+
+### Seeded result
+
+With seed 7, `quad 3` and `car 7` fail at tick 6. Silence timeout at tick 10
+causes re-auction. `quad 1` loses communication at tick 20 and rejoins at tick
+24, causing another re-auction. All **20 of 20 tasks complete**; the two
+interrupted tasks resume on surviving capable agents.
+
+| Metric | Result |
+| --- | ---: |
+| Permanent failures | 2 |
+| Re-auctions after the initial auction | 2 |
+| ED-CBBA auction broadcasts (initial / timeout / join) | 16 / 12 / 12 |
+| Heartbeats sent | 298 |
+| Completed tasks | 20 / 20 |
+
+The first figure shows task execution by agent. A red cross marks failure at
+the end of a task segment; a dotted arrow points to the agent that resumes
+the unfinished task. Dashed vertical lines mark re-auctions.
+
+![Failure and task handoff timeline](doc/failure_reauction_timeline.png)
+
+The next figure records actual ED-CBBA broadcast triggers across all three
+auction episodes. Its horizontal axis concatenates their consensus rounds;
+episode labels give the corresponding simulation tick.
+
+![ED-CBBA triggers during failure and recovery](doc/failure_ed_cbba_trigger_frequency.png)
+
+An additional [E1/E2 detection timeline](doc/failure_trigger_timeline.png)
+shows when neighbours disappear, time out, and rejoin. Its crosses are
+**failure-detection events**, whereas the orange crosses above are
+**ED-CBBA broadcast triggers**.
+
+## Verification and scope
+
+```bash
+MPLBACKEND=Agg .venv/bin/python -m unittest test.test_ed_cbba test.test_failure_simulation -v
 ```
 
-The algorithm's main function is `CBBA.solve()`. An example with task time window is shown below.
-```python
-#!/usr/bin/env python3
-import json
-import matplotlib.pyplot as plt
-import pathmagic
-with pathmagic.context():
-    from CBBA import CBBA
-    from WorldInfo import WorldInfo
-    import HelperLibrary as HelperLibrary
+The tests compare standard and event-driven assignments on connected graphs,
+check broadcast accounting, verify task progress after failures, and check
+that the failure sampler leaves at least one agent of each type.
 
+The communication and failure experiments are synchronous simulations. The
+event monitor uses graph reachability for direct or relayed heartbeat news;
+it does not simulate packet delays or a fully distributed failure detector.
+The paper does not specify every task count and score parameter needed to
+reproduce its published Monte Carlo figures exactly. Its convergence and
+quality guarantees require a diminishing-marginal-gain score and a connected
+static graph; the existing repository score function is retained here.
 
-if __name__ == "__main__":
-    # a json configuration file
-    config_file_name = "config_example_01.json"
-    # Read the configuration from the json file
-    json_file = open(config_file_name)
-    config_data = json.load(json_file)
+## References
 
-    # create a world, each list is [min, max] coordinates for x,y,z axis
-    WorldInfoTest = WorldInfo([-2.0, 2.5], [-1.5, 5.5], [0.0, 20.0])
-
-    # create a list of Agent(s) and Task(s)
-    num_agents = 5
-    num_tasks = 10
-    max_depth = num_tasks
-    AgentList, TaskList = HelperLibrary.create_agents_and_tasks(num_agents, num_tasks, WorldInfoTest, config_data)
-
-    # create a CBBA solver
-    CBBA_solver = CBBA(config_data)
-
-    # solve
-    path_list, times_list = CBBA_solver.solve(AgentList, TaskList, WorldInfoTest, max_depth, time_window_flag=True)
-
-    # path_list is a 2D list, i-th sub-list is the task exploration order of Agent-i.
-    # e.g. path_list = [[0, 4, 3, 1], [2, 5]] means Agent-0 visits Task 0 -> 4 -> 3 -> 1, and Agent-1 visits Task 2 -> 5
-
-    # times_list is a 2D list, i-th sub-list is the task beginning timestamp of Agent-i's tasks.
-    # e.g. times_list = [[10.5, 20.3, 30.0, 48.0], [20.4, 59.5]] means Agent-0 arrives at Task-0 before time=10.5 second, and then conduct Task-0;
-    # Agent-0 arrives at Task-4 before time=20.3 second, and then conduct Task-4, etc.
-
-    # plot
-    CBBA_solver.plot_assignment()
-    plt.show()
-
-
-```
-
-An example without task time window is shown below.
-```python
-    # create a list of Agent(s) and Task(s)
-    # create_agents_and_tasks_homogeneous() set Task.start_time, Task.duration, and Task.end_time as zero
-    # when time_window_flag=False, CBBA doesn't consider Task.start_time, Task.duration, and Task.end_time
-    AgentList, TaskList = HelperLibrary.create_agents_and_tasks_homogeneous(num_agents, num_tasks, WorldInfoTest, config_data)
-    # create a CBBA solver
-    CBBA_solver = CBBA(config_data)
-
-    # solve, no time window
-    path_list, _ = CBBA_solver.solve(AgentList, TaskList, WorldInfoTest, max_depth, time_window_flag=False)
-
-```
-
-
-Example
-=======
-
-A simple example with a task time window is [`run_cbba_example_01.py`](/test/run_cbba_example_01.py).
-```
-$ cd <MAIN_DIRECTORY>
-$ python3 run_cbba_example_01.py
-```
-The task assignment for each agent is stored as a 2D list `path_list` (the return variable of `CBBA.solve()`). The result visualization is shown below.
-![A simple example with task time window a](/doc/1_a.png)
-![A simple example with task time window b](/doc/1_b.png)
-
-
-Another example with task time window (but the task duration is zero) is [`run_cbba_example_02.py`](/test/run_cbba_example_02.py).
-```
-$ cd <MAIN_DIRECTORY>
-$ python3 run_cbba_example_02.py
-```
-The task assignment for each agent is stored as a 2D list `path_list` (the return variable of `CBBA.solve()`). The result visualization is shown below.
-![A simple example with task time window 2](/doc/2.png)
-
-
-An example where tasks don't have time window is [`run_cbba_example_03.py`](/test/run_cbba_example_03.py).
-```
-$ cd <MAIN_DIRECTORY>
-$ python3 run_cbba_example_03.py
-```
-The result visualization is shown below.
-![A simple example without task time window](/doc/3.png)
-
-
-Not every task is assigned. What happened?
-======================================================
-
-There are some configuration settings in json files that can cause this problem.
-
-If your tasks have time windows, i.e. `time_window_flag=True`, it is possible that no agent can execute a task due to the limitation of `START_TIME` or `END_TIME` for this task.
-It can take a long time for every agent traveling to this task. Before an agent arrives at this location, this task has been expired.
-So it is impossible for this task to be assigned to any agents.
-A quick fix is to set a relatively large `END_TIME` or small `DURATION` if your world , i.e., `WorldInfo` is large.
-
-More details in compute_bid() and scoring_compute_score() of [`CBBA.py`](/lib/CBBA.py)
+- Choi, Brunet, and How, ["Consensus-Based Decentralized Auctions for Robust
+  Task Allocation"](https://ieeexplore.ieee.org/document/5072249), *IEEE
+  Transactions on Robotics*, 2009.
+- Sao, Ho, Bhore, and Sujit, ["Event Driven CBBA with Reduced
+  Communication"](https://arxiv.org/abs/2509.06481), arXiv:2509.06481v1,
+  2025.
