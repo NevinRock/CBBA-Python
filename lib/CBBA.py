@@ -49,29 +49,23 @@ class CBBA(object):
         # List task types
         self.task_types = config_data["TASK_TYPES"]
         # time interval for all the agents and tasks
-        self.time_interval_list = [min(int(config_data["TRACK_DEFAULT"]["START_TIME"]),
-                                       int(config_data["RESCUE_DEFAULT"]["START_TIME"])),
-                                   max(int(config_data["TRACK_DEFAULT"]["END_TIME"]),
-                                       int(config_data["RESCUE_DEFAULT"]["END_TIME"]))]
+        task_defaults = config_data.get("TASK_DEFAULTS")
+        if task_defaults is None:
+            task_defaults = [config_data["TRACK_DEFAULT"], config_data["RESCUE_DEFAULT"]]
+        else:
+            task_defaults = list(task_defaults.values())
+        self.time_interval_list = [min(int(item["START_TIME"]) for item in task_defaults),
+                                   max(int(item["END_TIME"]) for item in task_defaults)]
         # Ture when all task duration > 0
-        self.duration_flag = (min(int(config_data["TRACK_DEFAULT"]["DURATION"]),
-                                  int(config_data["RESCUE_DEFAULT"]["DURATION"])) > 0)
+        self.duration_flag = min(int(item["DURATION"]) for item in task_defaults) > 0
 
         # Initialize Compatibility Matrix
         self.compatibility_mat = [[0] * len(self.task_types) for _ in range(len(self.agent_types))]
 
-        # FOR USER TO DO: Set agent-task pairs (which types of agents can do which types of tasks)
-        try:
-            # quadrotor for track
-            self.compatibility_mat[self.agent_types.index("quad")][self.task_types.index("track")] = 1
-        except Exception as e:
-            print(e)
-
-        try:
-            # car for rescue
-            self.compatibility_mat[self.agent_types.index("car")][self.task_types.index("rescue")] = 1
-        except Exception as e:
-            print(e)
+        capabilities = config_data.get("COMPATIBILITY", {"quad": ["track"], "car": ["rescue"]})
+        for agent_type, allowed_tasks in capabilities.items():
+            for task_type in allowed_tasks:
+                self.compatibility_mat[self.agent_types.index(agent_type)][self.task_types.index(task_type)] = 1
 
     def settings(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
                  max_depth: int, time_window_flag: bool, event_triggered: bool = False,
@@ -136,7 +130,7 @@ class CBBA(object):
     def solve(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
               max_depth: int, time_window_flag: bool, event_triggered: bool = False,
               communication_graph: list = None, incumbent_owners: dict = None,
-              incumbency_bonus: float = 0.0):
+              incumbency_bonus: float = 0.0, agent_task_eligibility: list = None):
         """
         Main CBBA Function
         """
@@ -144,6 +138,11 @@ class CBBA(object):
         # Initialize some lists given AgentList, TaskList, and WorldInfoInput.
         self.settings(AgentList, TaskList, WorldInfoInput, max_depth, time_window_flag,
                       event_triggered, communication_graph)
+        if agent_task_eligibility is not None:
+            if len(agent_task_eligibility) != self.num_agents or any(
+                    len(row) != self.num_tasks for row in agent_task_eligibility):
+                raise ValueError("agent_task_eligibility must be an N x M matrix")
+        self.agent_task_eligibility = agent_task_eligibility
         if incumbency_bonus < 0:
             raise ValueError("incumbency_bonus must be nonnegative")
         self.incumbent_owners = incumbent_owners or {}
@@ -602,7 +601,10 @@ class CBBA(object):
         for idx_task in range(self.num_tasks):
             # Check for compatibility between agent and task
             # for floating precision
-            if self.compatibility_mat[self.AgentList[idx_agent].agent_type][self.TaskList[idx_task].task_type] > 0.5:
+            if (self.compatibility_mat[self.AgentList[idx_agent].agent_type]
+                    [self.TaskList[idx_task].task_type] > 0.5 and
+                    (self.agent_task_eligibility is None or
+                     self.agent_task_eligibility[idx_agent][idx_task])):
                 
                 # Check to make sure the path doesn't already contain task m
                 index_array = np.where(np.array(self.path_list[idx_agent][0:empty_task_index_list[0]]) == idx_task)[0]
@@ -682,8 +684,7 @@ class CBBA(object):
         Compute marginal score of doing a task and returns the expected start time for the task.
         """
 
-        if (self.AgentList[idx_agent].agent_type == self.agent_types.index("quad")) or \
-                (self.AgentList[idx_agent].agent_type == self.agent_types.index("car")):
+        if 0 <= self.AgentList[idx_agent].agent_type < len(self.agent_types):
             
             if not task_prev:
                 # First task in path

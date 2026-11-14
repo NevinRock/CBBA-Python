@@ -33,6 +33,8 @@ scripts save PNG files and also run without a display.
 | `.venv/bin/python test/run_cbba_example_03.py` | Original CBBA without time windows |
 | `.venv/bin/python test/run_ed_cbba_example.py` | Seeded CBBA versus ED-CBBA comparison |
 | `.venv/bin/python test/run_failure_experiment.py` | Failure, silence, recovery, and re-auction simulation |
+| `.venv/bin/python test/run_multitype_scenario.py` | Four robot types and six task types; writes a detailed schedule |
+| `.venv/bin/python test/run_spatial_reauction_experiment.py` | Compare 20/40/60 m local re-auction with global ED-CBBA and traditional CBBA |
 | `./run_gui.sh` | Open the first original example in Qt plot windows |
 
 Run these commands from the repository root. For the original examples on a
@@ -43,6 +45,49 @@ time_window_flag, ...)`. It returns `path_list` (task IDs in execution order
 for each agent) and `times_list` (planned task start times). The solver uses a
 fully connected communication graph by default; a symmetric adjacency matrix
 can be supplied with `communication_graph=`.
+
+## Multi-type scheduling scenario
+
+The optional [multi-type scenario](config_multitype_scenario.json) has 12 robots
+(three each of `survey_quad`, `cargo_quad`, `rescue_car`, and `supply_truck`)
+and 24 tasks across six types. The `COMPATIBILITY` map in its configuration
+specifies which types may bid. Two aerial types compete for `relay` tasks,
+and two ground types compete for `ground_inspect` tasks. Air and ground
+robots cannot bid across those domains. All configured robot types use the
+same existing travel-time, time-window, and discounted-value score formula.
+
+The deterministic run allocates all 24 tasks in 17 ED-CBBA rounds with 60
+broadcasts. The generated [schedule](doc/multitype_schedule.md) lists every
+robot's starting position, every task's value and start window, and the
+winning robot's execution order, planned start/end time, and bid. This is a
+planned schedule from a static auction; it does not simulate task execution
+or failures. The original two-type examples retain their original capability
+rules when `COMPATIBILITY` is omitted.
+
+### Spatial local/global re-auction experiment
+
+The [spatial experiment](test/run_spatial_reauction_experiment.py) repeats 30
+paired trials on the 100 m × 100 m multi-type mission. In each trial one
+assigned robot fails before task execution. At radius 20, 40, or 60 m,
+capable surviving robots may bid for its tasks only if their starting
+position is within that distance of the task. A local auction includes the
+participating robots' existing tasks and keeps the four-task capacity. It
+falls back to a global auction if more than two tasks are affected, no
+capable robot is nearby, or the local schedule cannot assign all scoped
+tasks. A global ED-CBBA auction and a traditional all-broadcast CBBA auction
+use the same failures and serve as paired controls.
+
+The run writes a [summary](doc/spatial_reauction_summary.md), a
+[figure](doc/spatial_reauction_radius.png), and per-trial
+[CSV data](doc/spatial_reauction_trials.csv). An
+[English experiment report](doc/spatial_reauction_report.md) documents the
+method, results, and limitations. The radius is a task-bidding eligibility
+rule, not a radio range. Robots participating in one auction
+are assumed to communicate directly. The experiment measures static
+replanning after failure; it does not model travel during execution or
+failure-detection delay. Broadcast counts exclude the common initial
+auction. The original two-type failure simulation remains a separate
+execution-timeline example.
 
 ## ED-CBBA communication trigger
 
@@ -138,12 +183,13 @@ shows when neighbours disappear, time out, and rejoin. Its crosses are
 ## Verification and scope
 
 ```bash
-MPLBACKEND=Agg .venv/bin/python -m unittest test.test_ed_cbba test.test_failure_simulation -v
+MPLCONFIGDIR=/tmp/cbba-mpl .venv/bin/python -m unittest discover -s test -p 'test_*.py' -v
 ```
 
 The tests compare standard and event-driven assignments on connected graphs,
-check broadcast accounting, verify task progress after failures, and check
-that the failure sampler leaves at least one agent of each type.
+check broadcast accounting, verify task progress after failures, check spatial
+eligibility and task capacity, and check that the failure sampler leaves at
+least one agent of each type.
 
 The communication and failure experiments are synchronous simulations. The
 event monitor uses graph reachability for direct or relayed heartbeat news;
