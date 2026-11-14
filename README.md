@@ -79,8 +79,10 @@ use the same failures and serve as paired controls.
 
 The run writes a [summary](doc/spatial_reauction_summary.md), a
 [figure](doc/spatial_reauction_radius.png), and per-trial
-[CSV data](doc/spatial_reauction_trials.csv). The radius is a task-bidding
-eligibility rule, not a radio range. Robots participating in one auction
+[CSV data](doc/spatial_reauction_trials.csv). An
+[English experiment report](doc/spatial_reauction_report.md) documents the
+method, results, and limitations. The radius is a task-bidding eligibility
+rule, not a radio range. Robots participating in one auction
 are assumed to communicate directly. The experiment measures static
 replanning after failure; it does not model travel during execution or
 failure-detection delay. Broadcast counts exclude the common initial
