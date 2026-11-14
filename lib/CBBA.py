@@ -130,7 +130,7 @@ class CBBA(object):
     def solve(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
               max_depth: int, time_window_flag: bool, event_triggered: bool = False,
               communication_graph: list = None, incumbent_owners: dict = None,
-              incumbency_bonus: float = 0.0):
+              incumbency_bonus: float = 0.0, agent_task_eligibility: list = None):
         """
         Main CBBA Function
         """
@@ -138,6 +138,11 @@ class CBBA(object):
         # Initialize some lists given AgentList, TaskList, and WorldInfoInput.
         self.settings(AgentList, TaskList, WorldInfoInput, max_depth, time_window_flag,
                       event_triggered, communication_graph)
+        if agent_task_eligibility is not None:
+            if len(agent_task_eligibility) != self.num_agents or any(
+                    len(row) != self.num_tasks for row in agent_task_eligibility):
+                raise ValueError("agent_task_eligibility must be an N x M matrix")
+        self.agent_task_eligibility = agent_task_eligibility
         if incumbency_bonus < 0:
             raise ValueError("incumbency_bonus must be nonnegative")
         self.incumbent_owners = incumbent_owners or {}
@@ -596,7 +601,10 @@ class CBBA(object):
         for idx_task in range(self.num_tasks):
             # Check for compatibility between agent and task
             # for floating precision
-            if self.compatibility_mat[self.AgentList[idx_agent].agent_type][self.TaskList[idx_task].task_type] > 0.5:
+            if (self.compatibility_mat[self.AgentList[idx_agent].agent_type]
+                    [self.TaskList[idx_task].task_type] > 0.5 and
+                    (self.agent_task_eligibility is None or
+                     self.agent_task_eligibility[idx_agent][idx_task])):
                 
                 # Check to make sure the path doesn't already contain task m
                 index_array = np.where(np.array(self.path_list[idx_agent][0:empty_task_index_list[0]]) == idx_task)[0]
