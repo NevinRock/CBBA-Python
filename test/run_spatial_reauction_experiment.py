@@ -184,7 +184,7 @@ def write_results(rows):
     doc = ROOT / "doc"
     csv_path = doc / "spatial_reauction_trials.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(file, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
