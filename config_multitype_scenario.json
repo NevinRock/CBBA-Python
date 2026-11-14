@@ -1,0 +1,18 @@
+{
+  "AGENT_TYPES": ["survey_quad", "cargo_quad", "rescue_car", "supply_truck"],
+  "TASK_TYPES": ["survey", "relay", "air_drop", "rescue", "ground_inspect", "supply"],
+  "COMPATIBILITY": {
+    "survey_quad": ["survey", "relay"],
+    "cargo_quad": ["relay", "air_drop"],
+    "rescue_car": ["rescue", "ground_inspect"],
+    "supply_truck": ["ground_inspect", "supply"]
+  },
+  "TASK_DEFAULTS": {
+    "survey": {"START_TIME": 0, "END_TIME": 90, "DURATION": 6},
+    "relay": {"START_TIME": 0, "END_TIME": 90, "DURATION": 7},
+    "air_drop": {"START_TIME": 0, "END_TIME": 90, "DURATION": 8},
+    "rescue": {"START_TIME": 0, "END_TIME": 90, "DURATION": 9},
+    "ground_inspect": {"START_TIME": 0, "END_TIME": 90, "DURATION": 5},
+    "supply": {"START_TIME": 0, "END_TIME": 90, "DURATION": 10}
+  }
+}
