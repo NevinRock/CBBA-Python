@@ -35,6 +35,7 @@ scripts save PNG files and also run without a display.
 | `.venv/bin/python test/run_failure_experiment.py` | Failure, silence, recovery, and re-auction simulation |
 | `.venv/bin/python test/run_multitype_scenario.py` | Four robot types and six task types; writes a detailed schedule |
 | `.venv/bin/python test/run_spatial_reauction_experiment.py` | Compare 20/40/60 m local re-auction with global ED-CBBA and traditional CBBA |
+| `.venv/bin/python test/run_packet_loss_experiment.py` | Compare CBBA, ED-CBBA, and periodic-refresh ED-CBBA under packet loss |
 | `./run_gui.sh` | Open the first original example in Qt plot windows |
 
 Run these commands from the repository root. For the original examples on a
@@ -124,6 +125,45 @@ shows the trigger frequency per consensus round.
 
 The horizontal axis is **logical consensus time**, not wall-clock seconds:
 this solver performs offline auctions and has no physical communication clock.
+
+## Packet-loss robustness experiment
+
+The [packet-loss experiment](test/run_packet_loss_experiment.py) uses the
+same connected sparse-graph scenario generator as the seeded ED-CBBA example.
+It compares standard CBBA, ED-CBBA, and ED-CBBA with a full-state refresh every
+five rounds at independent per-link packet loss rates of 0%, 5%, 10%, 20%, and
+30%. Thirty paired missions share robot/task positions and potential packet
+erasures across methods. Each mission has 10 robots, 20 tasks, and bundle
+capacity 3. A packet can reach some neighbours and be lost at others.
+
+Run from the repository root on Windows:
+
+```powershell
+.\.venv\Scripts\python.exe test/run_packet_loss_experiment.py
+```
+
+The script writes a [report](doc/packet_loss_summary.md),
+[trial CSV](doc/packet_loss_trials.csv), and
+[comparison figure](doc/packet_loss_comparison.png). Options include
+`--trials`, `--rounds`, `--refresh-interval`, `--loss-rates`, and `--output-dir`.
+The default run executes 450 auctions, each with exactly 100 consensus rounds.
+The common round budget replaces the solver's quiet stopping rule for this
+experiment; silence under packet loss is not evidence of convergence.
+
+Success requires all tasks to be assigned once, consistent winner/bid beliefs
+across agents, and agreement between those beliefs and the returned paths.
+The report includes success intervals, duplicate ownership, coverage, and
+communication costs over the entire budget, including traffic after an
+assignment stabilises. This tests static allocation under synchronous packet
+erasures; it does not simulate task execution, delay, reordering, or robot
+failures. Periodic refresh is a candidate robustness measure, not a guarantee
+of convergence under arbitrary loss.
+
+The new `CBBA.solve()` options are `packet_loss_probability`,
+`communication_seed`, `refresh_interval`, and `round_budget`. Their defaults
+retain loss-free delivery, no forced refresh, and the existing stopping rule.
+`total_packet_attempts`, `total_packets_delivered`, and `total_packets_dropped`
+count directed neighbour deliveries; `total_broadcasts` still counts senders.
 
 ## Failure-triggered re-auction experiment
 

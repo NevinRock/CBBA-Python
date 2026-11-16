@@ -2,6 +2,7 @@
 import sys
 import math
 import copy
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 from Task import Task
@@ -69,10 +70,27 @@ class CBBA(object):
 
     def settings(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
                  max_depth: int, time_window_flag: bool, event_triggered: bool = False,
-                 communication_graph: list = None):
+                 communication_graph: list = None, packet_loss_probability: float = 0.0,
+                 communication_seed: int = 0, refresh_interval: int = None,
+                 round_budget: int = None):
         """
         Initialize some lists given new AgentList, TaskList, and WorldInfoInput.
         """
+
+        if not 0 <= packet_loss_probability <= 1:
+            raise ValueError("packet_loss_probability must be in [0, 1]")
+        for name, value in (("refresh_interval", refresh_interval),
+                            ("round_budget", round_budget)):
+            if value is not None and (type(value) is not int or value < 1):
+                raise ValueError(f"{name} must be a positive integer or None")
+        self.packet_loss_probability = packet_loss_probability
+        self._packet_rng = random.Random(communication_seed)
+        self.refresh_interval = refresh_interval
+        self.round_budget = round_budget
+        self.total_packet_attempts = 0
+        self.total_packets_delivered = 0
+        self.total_packets_dropped = 0
+        self.termination_reason = None
 
         self.num_agents = len(AgentList)
         self.num_tasks = len(TaskList)
@@ -130,14 +148,23 @@ class CBBA(object):
     def solve(self, AgentList: list, TaskList: list, WorldInfoInput: WorldInfo,
               max_depth: int, time_window_flag: bool, event_triggered: bool = False,
               communication_graph: list = None, incumbent_owners: dict = None,
-              incumbency_bonus: float = 0.0, agent_task_eligibility: list = None):
+              incumbency_bonus: float = 0.0, agent_task_eligibility: list = None,
+              packet_loss_probability: float = 0.0, communication_seed: int = 0,
+              refresh_interval: int = None, round_budget: int = None):
         """
-        Main CBBA Function
+        Main CBBA Function.
+
+        Optional packet loss independently erases each sender-to-neighbour
+        delivery. ED senders still record attempted broadcasts as sent (no ACKs).
+        refresh_interval forces all agents to broadcast every K rounds.
+        round_budget runs exactly that many rounds instead of the legacy quiet
+        stopping rule; reaching the budget does not establish convergence.
         """
 
         # Initialize some lists given AgentList, TaskList, and WorldInfoInput.
         self.settings(AgentList, TaskList, WorldInfoInput, max_depth, time_window_flag,
-                      event_triggered, communication_graph)
+                      event_triggered, communication_graph, packet_loss_probability,
+                      communication_seed, refresh_interval, round_budget)
         if agent_task_eligibility is not None:
             if len(agent_task_eligibility) != self.num_agents or any(
                     len(row) != self.num_tasks for row in agent_task_eligibility):
@@ -176,7 +203,14 @@ class CBBA(object):
 
             # 3. Convergence Check
             # Determine if the assignment is over (implemented for now, but later this loop will just run forever)
-            if (iter_idx - iter_prev) > self.num_agents:
+            if self.round_budget is not None:
+                done_flag = iter_idx >= self.round_budget
+                if done_flag:
+                    self.termination_reason = "round_budget"
+                else:
+                    iter_idx += 1
+            elif (iter_idx - iter_prev) > self.num_agents:
+                self.termination_reason = "legacy_quiet"
                 done_flag = True
             elif (iter_idx - iter_prev) > (2*self.num_agents):
                 print("Algorithm did not converge due to communication trouble")
@@ -384,7 +418,9 @@ class CBBA(object):
         z = copy.deepcopy(old_z)
         y = copy.deepcopy(old_y)
 
-        if self.event_triggered:
+        refresh_due = (self.refresh_interval is not None
+                       and iter_idx % self.refresh_interval == 0)
+        if self.event_triggered and not refresh_due:
             senders = [k for k in range(self.num_agents)
                        if old_z[k] != self.last_sent_winners[k]
                        or old_y[k] != self.last_sent_bids[k]]
@@ -393,6 +429,13 @@ class CBBA(object):
         self.broadcast_history.append(len(senders))
         self.broadcast_agents_history.append(senders.copy())
         self.total_broadcasts += len(senders)
+
+        # Draw for every ordered pair, including silent senders and absent
+        # edges. Equal seeds therefore produce the same potential delivery
+        # outcomes at (round, sender, receiver) across broadcast policies.
+        delivery = [[self._packet_rng.random() >= self.packet_loss_probability
+                     for _ in range(self.num_agents)]
+                    for _ in range(self.num_agents)]
 
         epsilon = 10e-6
 
@@ -404,6 +447,11 @@ class CBBA(object):
         for k in senders:
             for i in range(self.num_agents):
                 if self.graph[k][i] == 1:
+                    self.total_packet_attempts += 1
+                    if not delivery[k][i]:
+                        self.total_packets_dropped += 1
+                        continue
+                    self.total_packets_delivered += 1
                     for j in range(self.num_tasks):
                         # Implement table for each task
 
