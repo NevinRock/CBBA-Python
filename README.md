@@ -36,6 +36,7 @@ scripts save PNG files and also run without a display.
 | `.venv/bin/python test/run_multitype_scenario.py` | Four robot types and six task types; writes a detailed schedule |
 | `.venv/bin/python test/run_spatial_reauction_experiment.py` | Compare 20/40/60 m local re-auction with global ED-CBBA and traditional CBBA |
 | `.venv/bin/python test/run_packet_loss_experiment.py` | Compare CBBA, ED-CBBA, and periodic-refresh ED-CBBA under packet loss |
+| `.venv/bin/python test/run_homogeneous_experiment.py` | Homogeneous pre-execution failure comparison (27-row smoke test by default) |
 | `./run_gui.sh` | Open the first original example in Qt plot windows |
 
 Run these commands from the repository root. For the original examples on a
@@ -89,6 +90,39 @@ replanning after failure; it does not model travel during execution or
 failure-detection delay. Broadcast counts exclude the common initial
 auction. The original two-type failure simulation remains a separate
 execution-timeline example.
+
+## Homogeneous failure re-auction experiment
+
+The [homogeneous experiment](test/run_homogeneous_experiment.py) compares
+Standard CBBA, global ED-CBBA and 40 m distance-scoped ED-CBBA using 30 paired
+seeds at each of 6/18, 12/36 and 24/72 robots/tasks. Each mission shares one
+initial assignment and one pre-execution robot failure across methods.
+The [configuration](config_homogeneous_scenario.json) specifies one fully
+compatible type, a 100 m × 100 m map, capacity 4, speed 5 m/s, task value 100,
+duration 8 s and start window [0,240] s. Discount 0.02 and a 10% incumbent bid
+bonus are explicit additional assumptions; reported scores exclude the bonus.
+
+The [English report](doc/homogeneous/final_report.md),
+[270-row trial CSV](doc/homogeneous/trials.csv),
+[statistics](doc/homogeneous/summary_statistics.csv) and
+[seven-metric figure](doc/homogeneous/figures/all_seven_metrics.png) document the
+formal run. Global ED reduced mean broadcasts by 56.73%, 71.98% and 83.65%
+relative to Standard. Distance scope's additional communication benefit was
+scale-dependent, including a small mean increase at six robots. Every method
+allocated all tasks. Failed local attempts and global fallback costs are retained.
+
+Audit or regenerate the saved results without rerunning auctions:
+
+```powershell
+.\.venv\Scripts\python.exe test/audit_homogeneous_results.py --output-dir doc/homogeneous
+.\.venv\Scripts\python.exe test/analyze_homogeneous_results.py --output-dir doc/homogeneous
+```
+
+The default experiment command runs only smoke seeds 0,1,2. A full reproduction
+requires `--full --output-dir outputs/homogeneous_reproduction` and a new empty
+directory. See the [reproduction and audit guide](doc/homogeneous/README.md)
+for evidence contents, paired statistics, source hashes and limitations.
+The core solver and other experiments are unchanged.
 
 ## ED-CBBA communication trigger
 
