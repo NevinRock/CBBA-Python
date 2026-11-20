@@ -36,6 +36,7 @@ scripts save PNG files and also run without a display.
 | `.venv/bin/python test/run_multitype_scenario.py` | Four robot types and six task types; writes a detailed schedule |
 | `.venv/bin/python test/run_spatial_reauction_experiment.py` | Compare 20/40/60 m local re-auction with global ED-CBBA and traditional CBBA |
 | `.venv/bin/python test/run_packet_loss_experiment.py` | Compare CBBA, ED-CBBA, and periodic-refresh ED-CBBA under packet loss |
+| `.venv/bin/python test/run_exclusive_capabilities_experiment.py` | Experiment 2: post-failure re-auction with exclusive air/ground capabilities at 6, 12 and 24 robots |
 | `./run_gui.sh` | Open the first original example in Qt plot windows |
 
 Run these commands from the repository root. For the original examples on a
@@ -89,6 +90,24 @@ replanning after failure; it does not model travel during execution or
 failure-detection delay. Broadcast counts exclude the common initial
 auction. The original two-type failure simulation remains a separate
 execution-timeline example.
+
+## Experiment 2: exclusive capabilities
+
+The [Experiment 2 script](test/run_exclusive_capabilities_experiment.py)
+compares standard CBBA, ED-CBBA and distance-scoped ED-CBBA (40 m local
+attempt, then a global fallback) after one robot fails. The teams have 6, 12
+and 24 robots, half air and half ground, and each task can be done by only one
+of the two types. The script runs 30 paired trials per team size, with and
+without an incumbency bonus. It writes a [report](doc/exclusive_capabilities/report.md)
+that explains the method, the decisions behind it (including a capacity of 5
+tasks per robot instead of 4) and the results. It also writes generated
+[tables](doc/exclusive_capabilities/summary.md), figures and
+[per-trial data](doc/exclusive_capabilities/trials.csv).
+
+`CBBA.solve()` now also records `settled_round`, the consensus round in which
+the last change to the allocation was shared, and `broadcasts_until_settled`.
+These exclude the idle rounds that the stopping rule adds after the allocation
+has stopped changing.
 
 ## ED-CBBA communication trigger
 

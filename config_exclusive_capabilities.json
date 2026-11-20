@@ -1,0 +1,12 @@
+{
+  "AGENT_TYPES": ["air", "ground"],
+  "TASK_TYPES": ["air_only", "ground_only"],
+  "COMPATIBILITY": {
+    "air": ["air_only"],
+    "ground": ["ground_only"]
+  },
+  "TASK_DEFAULTS": {
+    "air_only": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8},
+    "ground_only": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8}
+  }
+}
