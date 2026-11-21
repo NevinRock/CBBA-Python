@@ -1,0 +1,4 @@
+num_robots,n,local_successes,local_recovery_rate,local_rate_ci95_low,local_rate_ci95_high,local_attempts,failed_local_attempts,precheck_no_candidate,precheck_too_many_affected,capacity_or_schedule_fallbacks,invalid_or_solver_error_fallbacks,failed_attempt_extra_broadcasts_total,successful_local_broadcast_savings_total,net_broadcast_savings_vs_global_ed_total,failed_attempt_extra_broadcasts_mean_per_trial,failed_attempt_extra_rounds_total,failed_attempt_runtime_seconds_total,higher_broadcast_cost_than_global_ed,tied_broadcast_cost_with_global_ed
+6,30,6,0.2,0.09505107177289876,0.3730569641314826,13,7,17,0,7,0,59,44,-15,1.9666666666666666,43,0.017636700002185535,7,17
+12,30,17,0.5666666666666667,0.3919730700081361,0.7262251442353347,25,8,5,0,8,0,178,345,167,5.933333333333334,76,0.14955920000284095,8,5
+24,30,28,0.9333333333333333,0.7867654163738309,0.9815229762087296,29,1,1,0,1,0,28,1753,1725,0.9333333333333333,11,0.01215299999967101,1,1

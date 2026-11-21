@@ -7,3 +7,5 @@
 /lib/__pycache__/**
 /test/__pycache__/**
 /.venv/
+/outputs/homogeneous_full/
+/outputs/homogeneous_smoke_stage2/
