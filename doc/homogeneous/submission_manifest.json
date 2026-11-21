@@ -1,0 +1,213 @@
+{
+  "purpose": "Release file inventory for Experiment 1: Homogeneous",
+  "base_commit": "41d1ceb8a8c27b5759b69d66ba5a6b3b0c23c93e",
+  "reference_delivery_style": "PR #2 spatial re-auction and existing packet-loss experiment",
+  "candidate_file_count": 31,
+  "total_bytes": 3218773,
+  "files": [
+    {
+      "path": ".gitignore",
+      "status": "modified",
+      "bytes": 161,
+      "sha256": "5d7eb834d0e42dcf29bfae4a0377248fd432b775fca4a19e7b9ff15a4519de9c"
+    },
+    {
+      "path": "README.md",
+      "status": "modified",
+      "bytes": 14595,
+      "sha256": "2a33b5fd313450a6c43312f7b36ae9eb160092eb0f216fae96a15acb096db19c"
+    },
+    {
+      "path": "config_homogeneous_scenario.json",
+      "status": "new",
+      "bytes": 626,
+      "sha256": "d1451a42cb4c39a2dca960c2bd30851d07c9dc3c11eeeba4869c63ba63371bd0"
+    },
+    {
+      "path": "doc/homogeneous/README.md",
+      "status": "new",
+      "bytes": 5061,
+      "sha256": "de5ebbd82c5a4681304f5b414ef159e9baedb6ad9846222901b62088b02d2dd3"
+    },
+    {
+      "path": "doc/homogeneous/analysis_statistics.json",
+      "status": "new",
+      "bytes": 3380,
+      "sha256": "ac933cbf155f2f4a119a9c783aed4da224d6ec666d38946a4a1b0ea42ab6f11e"
+    },
+    {
+      "path": "doc/homogeneous/audit_evidence.jsonl.gz",
+      "status": "new",
+      "bytes": 2003590,
+      "sha256": "298bdc63e138bd4104588dd2b42768b04d1388ce881ac5808330e8d9023cdb20"
+    },
+    {
+      "path": "doc/homogeneous/environment-freeze.txt",
+      "status": "new",
+      "bytes": 237,
+      "sha256": "08c6d4ebcaf6f384f5a35619a713da2e6fb0e6eaf4c6e86d4b05c27517c4886c"
+    },
+    {
+      "path": "doc/homogeneous/fallback_attempts.csv",
+      "status": "new",
+      "bytes": 2342,
+      "sha256": "61c774204d9c117388236c7e8688673157d7edbd1ed490c8a3b12d50915771b0"
+    },
+    {
+      "path": "doc/homogeneous/fallback_summary.csv",
+      "status": "new",
+      "bytes": 947,
+      "sha256": "d1a5d37567f18a8dd7580d104090ce5c6a239093928d28c0afa7179ae4c8493d"
+    },
+    {
+      "path": "doc/homogeneous/figures/all_paired_local_savings.png",
+      "status": "new",
+      "bytes": 77564,
+      "sha256": "710959e712d4e0739471f5635b1029beb24fd842a1dbc82bb944611fa3d0d03e"
+    },
+    {
+      "path": "doc/homogeneous/figures/all_seven_metrics.png",
+      "status": "new",
+      "bytes": 332698,
+      "sha256": "7abcd5c787c0090c40ec225d05529cbc55c7971d481837d1c6f33d50bd3bdaf1"
+    },
+    {
+      "path": "doc/homogeneous/figures/local_cost_decomposition.png",
+      "status": "new",
+      "bytes": 54344,
+      "sha256": "2abf5c83f2fc3a175ed444145f2226c17af64de816b1d4ebe6da30ac63be1bfd"
+    },
+    {
+      "path": "doc/homogeneous/figures/local_recovery_fallback_breakdown.png",
+      "status": "new",
+      "bytes": 49937,
+      "sha256": "9f3fabf0427d4ed8419c74064f4e59151e84d45421c3a4bb5737c759d89b8752"
+    },
+    {
+      "path": "doc/homogeneous/figures/paired_assignment_score_change.png",
+      "status": "new",
+      "bytes": 73652,
+      "sha256": "bf9836dc52f0813e7a48b373f69e9b0e260a787938698715fe10dd8986f61caf"
+    },
+    {
+      "path": "doc/homogeneous/figures/paired_broadcast_savings.png",
+      "status": "new",
+      "bytes": 81548,
+      "sha256": "c5fec0d2a00296094040c4bf454bda2d0bed7a26a1e33ab9a9572e174bffbb59"
+    },
+    {
+      "path": "doc/homogeneous/figures/paired_local_broadcast_savings.png",
+      "status": "new",
+      "bytes": 67449,
+      "sha256": "97d8b08148f80b5175e91fc0527ea485944b2f75f18a98d6023f5ce0b67a1019"
+    },
+    {
+      "path": "doc/homogeneous/final_report.md",
+      "status": "new",
+      "bytes": 16033,
+      "sha256": "a0520e7cee1c9b9867083f2c7eff0764422c334c93994d651a1048a0f798bf88"
+    },
+    {
+      "path": "doc/homogeneous/independent_audit.json",
+      "status": "new",
+      "bytes": 8087,
+      "sha256": "009500b6ce15a1b8160eca74a9942bcdf1ce558d46a2c17730e4c28caa9cc4b1"
+    },
+    {
+      "path": "doc/homogeneous/paired_comparisons.csv",
+      "status": "new",
+      "bytes": 21858,
+      "sha256": "caf02041870f5b3c1ca0890ccf8cf7e6df620d886577f7d8c49196fe221a5b78"
+    },
+    {
+      "path": "doc/homogeneous/paired_seed_differences.csv",
+      "status": "new",
+      "bytes": 176099,
+      "sha256": "640396e4c9cfdf6081d0f18894b90033b7532f5386a1539481a48e82894fed97"
+    },
+    {
+      "path": "doc/homogeneous/run_provenance.json",
+      "status": "new",
+      "bytes": 4154,
+      "sha256": "ba9a2e4912e6c03c4affdb2ec89119e3a185080b294a713efba2a0a860bc8abc"
+    },
+    {
+      "path": "doc/homogeneous/submission_manifest.json",
+      "status": "new",
+      "bytes": 7474,
+      "sha256": null,
+      "note": "Self hash intentionally excluded"
+    },
+    {
+      "path": "doc/homogeneous/summary_statistics.csv",
+      "status": "new",
+      "bytes": 10609,
+      "sha256": "5e62b096183133d138a28cec2c07143ae2f3a678c62277c438a089277cfdf3de"
+    },
+    {
+      "path": "doc/homogeneous/trials.csv",
+      "status": "new",
+      "bytes": 77010,
+      "sha256": "f65bdaf820cd3976c534c08891832c1c9d9a9874f8d9c472082cf23ce7d61230"
+    },
+    {
+      "path": "doc/homogeneous/verification.json",
+      "status": "new",
+      "bytes": 1312,
+      "sha256": "497ab2fe208b874f98175dbf93d6a1c391e7a7271e5c13a8c2f4c21a58fb451f"
+    },
+    {
+      "path": "test/analyze_homogeneous_results.py",
+      "status": "new",
+      "bytes": 41963,
+      "sha256": "61ebabf3bcfd42c6c80929e9370f23c7cf7339926f52a767c9b2c38a2489a850"
+    },
+    {
+      "path": "test/audit_homogeneous_results.py",
+      "status": "new",
+      "bytes": 25139,
+      "sha256": "ec1cb4472f95afacda533a02a3cb8214f0c60d67f8a8bd98185ce0d678e5c264"
+    },
+    {
+      "path": "test/homogeneous_artifacts.py",
+      "status": "new",
+      "bytes": 5146,
+      "sha256": "1276b525f95f052e0c3bf615ade654a7d516f2b64b7941dd3eb212cbbedf035c"
+    },
+    {
+      "path": "test/run_homogeneous_experiment.py",
+      "status": "new",
+      "bytes": 37954,
+      "sha256": "c34f9d936f4e58cb247475434ec252c18941b6c76a0a1f698c64a4845b67377b"
+    },
+    {
+      "path": "test/test_homogeneous_delivery.py",
+      "status": "new",
+      "bytes": 4456,
+      "sha256": "522caf54358dad54e38b3c4a1389d91bdde073850804c01dbcc287045cc99282"
+    },
+    {
+      "path": "test/test_homogeneous_experiment.py",
+      "status": "new",
+      "bytes": 13348,
+      "sha256": "1cbe5dd56b5d569e477d3f42ed34be79cb7931471e435d43f3291989d2d1693e"
+    }
+  ],
+  "existing_unchanged_dependencies": {
+    "requirements.txt": "3fa4a1596f6d2aa6bbadd14cffa99ce546ae2783227da9a1c369733b3dee1ab9",
+    "test/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lib/CBBA.py": "40b934ac813d9a817a02bcffeeca1e44717141903281f897c7c6facea0d6e6b3",
+    "lib/Agent.py": "bac6f9ade54392c3c48795236fb0fb9b9ce7171e97d67a2ea97e16b2067016c5",
+    "lib/Task.py": "4fd48cffc227047dd6358374e587e94006d51086383715a65655c63e375d7547",
+    "lib/WorldInfo.py": "b905e315caba2e3dac73b50c99a905536004db08ba48a1adc1c96bf90b999a6c"
+  },
+  "independent_audit_supported_without_local_outputs": true,
+  "minimal_required_audit_supplement": "doc/homogeneous/audit_evidence.jsonl.gz",
+  "excluded": {
+    "outputs/homogeneous_full/": "Complete original 418-file run retained locally",
+    "outputs/homogeneous_smoke_stage2/": "Smoke results, never included with formal results",
+    "doc/homogeneous_stage2_report.md": "Internal stage-two report, not the final report",
+    ".venv/": "Local virtual environment",
+    "__pycache__/": "Generated caches"
+  }
+}

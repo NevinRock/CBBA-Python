@@ -1,0 +1,71 @@
+{
+  "experiment_base_commit": "41d1ceb8a8c27b5759b69d66ba5a6b3b0c23c93e",
+  "execution_time_source_state": "Experiment files were uncommitted; frozen executed bytes and hashes are in audit_evidence.jsonl.gz",
+  "run_timestamp_utc": "2026-11-20T16:45:58.620734+00:00",
+  "python": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "dependencies": {
+    "contourpy": "1.4.0",
+    "cycler": "0.12.1",
+    "fonttools": "4.68.0",
+    "kiwisolver": "1.5.1",
+    "matplotlib": "3.11.2",
+    "numpy": "2.5.4",
+    "packaging": "26.3",
+    "pillow": "13.0.0",
+    "pip": "25.1.1",
+    "pyparsing": "3.3.3",
+    "PyQt6": "6.12.0",
+    "PyQt6-Qt6": "6.12.0",
+    "PyQt6_sip": "13.13.1",
+    "python-dateutil": "4.0.0",
+    "tzdata": "2026.6"
+  },
+  "configuration_sha256": "d1451a42cb4c39a2dca960c2bd30851d07c9dc3c11eeeba4869c63ba63371bd0",
+  "execution_time_source_sha256": {
+    "README.md": "8d546151eee62b5451386ab43009faf09bfafd15054070fd2e0b82d685ebd6e6",
+    "requirements.txt": "3fa4a1596f6d2aa6bbadd14cffa99ce546ae2783227da9a1c369733b3dee1ab9",
+    "config_homogeneous_scenario.json": "d1451a42cb4c39a2dca960c2bd30851d07c9dc3c11eeeba4869c63ba63371bd0",
+    "doc/homogeneous_stage2_report.md": "d2870de10e286dca4e00e0da350edb26cc31dc1f8663deec54943f939bf05aba",
+    "test/run_homogeneous_experiment.py": "c34f9d936f4e58cb247475434ec252c18941b6c76a0a1f698c64a4845b67377b",
+    "test/test_homogeneous_experiment.py": "1cbe5dd56b5d569e477d3f42ed34be79cb7931471e435d43f3291989d2d1693e",
+    "lib/Agent.py": "bac6f9ade54392c3c48795236fb0fb9b9ce7171e97d67a2ea97e16b2067016c5",
+    "lib/CBBA.py": "40b934ac813d9a817a02bcffeeca1e44717141903281f897c7c6facea0d6e6b3",
+    "lib/FailureSimulation.py": "80e94597d010078b5acc221baf1bd5e9b4ade61b011e1f214a313413c858f9bb",
+    "lib/HelperLibrary.py": "95d03d1935baea3d812b6898d33980a5deb25a44e16234f7d622f68cb3f45d6a",
+    "lib/Task.py": "4fd48cffc227047dd6358374e587e94006d51086383715a65655c63e375d7547",
+    "lib/WorldInfo.py": "b905e315caba2e3dac73b50c99a905536004db08ba48a1adc1c96bf90b999a6c",
+    "lib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "delivered_scripts_sha256": {
+    "test/run_homogeneous_experiment.py": "c34f9d936f4e58cb247475434ec252c18941b6c76a0a1f698c64a4845b67377b",
+    "test/test_homogeneous_experiment.py": "1cbe5dd56b5d569e477d3f42ed34be79cb7931471e435d43f3291989d2d1693e",
+    "test/audit_homogeneous_results.py": "ec1cb4472f95afacda533a02a3cb8214f0c60d67f8a8bd98185ce0d678e5c264",
+    "test/analyze_homogeneous_results.py": "61ebabf3bcfd42c6c80929e9370f23c7cf7339926f52a767c9b2c38a2489a850",
+    "test/homogeneous_artifacts.py": "1276b525f95f052e0c3bf615ade654a7d516f2b64b7941dd3eb212cbbedf035c",
+    "test/test_homogeneous_delivery.py": "522caf54358dad54e38b3c4a1389d91bdde073850804c01dbcc287045cc99282"
+  },
+  "evidence": {
+    "file": "audit_evidence.jsonl.gz",
+    "sha256": "298bdc63e138bd4104588dd2b42768b04d1388ce881ac5808330e8d9023cdb20",
+    "entries": 379,
+    "input_snapshots": 90,
+    "method_diagnostics": 270,
+    "omitted_machine_local_metadata_fields": [
+      "manifest.json:config_path",
+      "preflight.json:python_executable"
+    ]
+  },
+  "formal_csv_sha256": {
+    "trials.csv": "f65bdaf820cd3976c534c08891832c1c9d9a9874f8d9c472082cf23ce7d61230",
+    "summary_statistics.csv": "5e62b096183133d138a28cec2c07143ae2f3a678c62277c438a089277cfdf3de",
+    "paired_comparisons.csv": "caf02041870f5b3c1ca0890ccf8cf7e6df620d886577f7d8c49196fe221a5b78",
+    "paired_seed_differences.csv": "640396e4c9cfdf6081d0f18894b90033b7532f5386a1539481a48e82894fed97",
+    "fallback_summary.csv": "d1a5d37567f18a8dd7580d104090ce5c6a239093928d28c0afa7179ae4c8493d",
+    "fallback_attempts.csv": "61c774204d9c117388236c7e8688673157d7edbd1ed490c8a3b12d50915771b0"
+  },
+  "experiment_logic_and_core_changed_for_delivery": false,
+  "changes_after_run": "Report wording, portable artifact IO, public metadata redaction, delivery regression tests and documentation",
+  "all_local_raw_results_retained": true,
+  "formal_experiment_rerun_during_delivery": false
+}
