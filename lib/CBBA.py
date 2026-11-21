@@ -150,9 +150,23 @@ class CBBA(object):
               communication_graph: list = None, incumbent_owners: dict = None,
               incumbency_bonus: float = 0.0, agent_task_eligibility: list = None,
               packet_loss_probability: float = 0.0, communication_seed: int = 0,
-              refresh_interval: int = None, round_budget: int = None):
+              refresh_interval: int = None, round_budget: int = None,
+              failed_agents: set = None, warm_start: dict = None, inform_round: dict = None,
+              max_rounds: int = None):
         """
         Main CBBA Function.
+
+        Failure re-auction from existing beliefs (all optional, off by default):
+        failed_agents: agent indices that have failed. They stay in the agent list so
+            other agents can still hold beliefs about them, but they never bid, never
+            broadcast and have no communication links.
+        warm_start: dict with per-agent "winners", "bids" (N x M) and "bundles", "paths",
+            "times", "scores" (lists of task indices / values), e.g. the previous
+            converged allocation. Agents start from these beliefs instead of empty lists.
+        inform_round: {agent index: round or None}. At the start of that round the agent
+            learns of the failures and releases every task it believes a failed agent
+            holds. None means never informed. Agents not listed are informed in round 1.
+        max_rounds: safety cap; stops with termination_reason "max_rounds" (not converged).
 
         Optional packet loss independently erases each sender-to-neighbour
         delivery. ED senders still record attempted broadcasts as sent (no ACKs).
@@ -175,6 +189,29 @@ class CBBA(object):
         self.incumbent_owners = incumbent_owners or {}
         self.incumbency_bonus = incumbency_bonus
 
+        self.failed_agents = set(failed_agents or ())
+        for f in self.failed_agents:
+            for n in range(self.num_agents):
+                self.graph[f][n] = self.graph[n][f] = False
+        if warm_start is not None:
+            self.winners_list = copy.deepcopy(warm_start["winners"])
+            self.winner_bid_list = copy.deepcopy(warm_start["bids"])
+            for n in range(self.num_agents):
+                pad = lambda values: list(values) + [-1] * (self.max_depth - len(values))  # noqa: E731
+                self.bundle_list[n] = pad(warm_start["bundles"][n])
+                self.path_list[n] = pad(warm_start["paths"][n])
+                self.times_list[n] = pad(warm_start["times"][n])
+                self.scores_list[n] = pad(warm_start["scores"][n])
+            # The warm state was already shared before the failure.
+            self.last_sent_winners = copy.deepcopy(self.winners_list)
+            self.last_sent_bids = copy.deepcopy(self.winner_bid_list)
+        self.inform_round = {n: 1 for n in range(self.num_agents) if n not in self.failed_agents}
+        if inform_round:
+            self.inform_round.update(inform_round)
+        # Do not let the quiet stopping rule end the auction before the last agent is informed.
+        min_rounds = max([r for r in self.inform_round.values() if r is not None] or [0]) \
+            if self.failed_agents else 0
+
         # Initialize working variables
         # Current iteration
         iter_idx = 1
@@ -185,11 +222,24 @@ class CBBA(object):
         # Last round in which any robot's winner or winning-bid list changed.
         last_change_round = 0
 
+        # Convergence bookkeeping (does not change the algorithm): the last round in
+        # which any agent's winner or winning-bid list changed. Rounds after it are
+        # spent only by the quiet stopping rule below.
+        self.last_change_round = 0
+        consensus_state = (copy.deepcopy(self.winners_list), copy.deepcopy(self.winner_bid_list))
+
         # Main CBBA loop (runs until convergence)
         while not done_flag:
             self.iterations = iter_idx
 
-            state_before = self._consensus_snapshot()
+            # 0. Agents that learn of the failure this round release the failed agents' tasks
+            if self.failed_agents:
+                for n, round_informed in self.inform_round.items():
+                    if round_informed == iter_idx:
+                        for j in range(self.num_tasks):
+                            if self.winners_list[n][j] in self.failed_agents:
+                                self.winners_list[n][j] = -1
+                                self.winner_bid_list[n][j] = -1
 
             # 1. Communicate
             # Perform consensus on winning agents and bid values (synchronous)
@@ -198,6 +248,8 @@ class CBBA(object):
             # 2. Run CBBA bundle building/updating
             # Run CBBA on each agent (decentralized but synchronous)
             for idx_agent in range(self.num_agents):
+                if idx_agent in self.failed_agents:
+                    continue
                 new_bid_flag = self.bundle(idx_agent)
 
                 # Update last time things changed
@@ -205,17 +257,24 @@ class CBBA(object):
                 if new_bid_flag:
                     iter_prev = iter_idx
 
-            if self._consensus_snapshot() != state_before:
-                last_change_round = iter_idx
+            if (self.winners_list, self.winner_bid_list) != consensus_state:
+                self.last_change_round = iter_idx
+                consensus_state = (copy.deepcopy(self.winners_list),
+                                   copy.deepcopy(self.winner_bid_list))
 
             # 3. Convergence Check
             # Determine if the assignment is over (implemented for now, but later this loop will just run forever)
-            if self.round_budget is not None:
+            if max_rounds is not None and iter_idx >= max_rounds and self.round_budget is None:
+                self.termination_reason = "max_rounds"
+                done_flag = True
+            elif self.round_budget is not None:
                 done_flag = iter_idx >= self.round_budget
                 if done_flag:
                     self.termination_reason = "round_budget"
                 else:
                     iter_idx += 1
+            elif iter_idx <= min_rounds:
+                iter_idx += 1
             elif (iter_idx - iter_prev) > self.num_agents:
                 self.termination_reason = "legacy_quiet"
                 done_flag = True
@@ -446,6 +505,8 @@ class CBBA(object):
                        or old_y[k] != self.last_sent_bids[k]]
         else:
             senders = list(range(self.num_agents))
+        failed = getattr(self, "failed_agents", ())
+        senders = [k for k in senders if k not in failed]
         self.broadcast_history.append(len(senders))
         self.broadcast_agents_history.append(senders.copy())
         self.total_broadcasts += len(senders)
@@ -753,7 +814,9 @@ class CBBA(object):
         """
 
         if 0 <= self.AgentList[idx_agent].agent_type < len(self.agent_types):
-            
+            # Execution time can depend on the executing agent's type.
+            agent_type = self.AgentList[idx_agent].agent_type
+
             if not task_prev:
                 # First task in path
                 # Compute start time of task
@@ -766,7 +829,7 @@ class CBBA(object):
                 dt = math.sqrt((task_prev.x-task_current.x)**2 + (task_prev.y-task_current.y)**2 +
                                (task_prev.z-task_current.z)**2) / self.AgentList[idx_agent].nom_velocity
                 # i have to have time to do task at j-1 and go to task m
-                min_start = max(task_current.start_time, time_prev + task_prev.duration + dt)
+                min_start = max(task_current.start_time, time_prev + task_prev.duration_for(agent_type) + dt)
 
             if not task_next:
                 # Last task in path
@@ -777,7 +840,7 @@ class CBBA(object):
                 dt = math.sqrt((task_next.x-task_current.x)**2 + (task_next.y-task_current.y)**2 +
                                (task_next.z-task_current.z)**2) / self.AgentList[idx_agent].nom_velocity
                 # i have to have time to do task m and fly to task at j+1
-                max_start = min(task_current.end_time, time_next - task_current.duration - dt)
+                max_start = min(task_current.end_time, time_next - task_current.duration_for(agent_type) - dt)
 
             # Compute score
             if self.time_window_flag:
@@ -855,17 +918,17 @@ class CBBA(object):
                 ax_3d.plot3D([self.AgentList[n].x, Task_prev.x], [self.AgentList[n].y, Task_prev.y],
                              [0, self.times_list[n][0]], linewidth=2, color=color_str)
                 ax_3d.plot3D([Task_prev.x, Task_prev.x], [Task_prev.y, Task_prev.y],
-                             [self.times_list[n][0], self.times_list[n][0]+Task_prev.duration],
+                             [self.times_list[n][0], self.times_list[n][0]+Task_prev.duration_for(self.AgentList[n].agent_type)],
                              linewidth=2, color=color_str)
 
                 for m in range(1, len(self.path_list[n])):
                     if self.path_list[n][m] > -1:
                         Task_next = self.lookup_task(self.path_list[n][m])
                         ax_3d.plot3D([Task_prev.x, Task_next.x], [Task_prev.y, Task_next.y],
-                                     [self.times_list[n][m-1]+Task_prev.duration, self.times_list[n][m]],
+                                     [self.times_list[n][m-1]+Task_prev.duration_for(self.AgentList[n].agent_type), self.times_list[n][m]],
                                      linewidth=2, color=color_str)
                         ax_3d.plot3D([Task_next.x, Task_next.x], [Task_next.y, Task_next.y],
-                                     [self.times_list[n][m], self.times_list[n][m]+Task_next.duration],
+                                     [self.times_list[n][m], self.times_list[n][m]+Task_next.duration_for(self.AgentList[n].agent_type)],
                                      linewidth=2, color=color_str)
                         Task_prev = Task(**Task_next.__dict__)
         
@@ -908,7 +971,7 @@ class CBBA(object):
                         if self.path_list[idx_agent][idx_path] > -1:
                             task_current = self.lookup_task(self.path_list[idx_agent][idx_path])
                             ax.plot([self.times_list[idx_agent][idx_path],
-                                     self.times_list[idx_agent][idx_path]+task_current.duration], [1, 1],
+                                     self.times_list[idx_agent][idx_path]+task_current.duration_for(self.AgentList[idx_agent].agent_type)], [1, 1],
                                     linestyle='-', linewidth=10, color=color_str, alpha=0.5)
                             ax.plot([task_current.start_time, task_current.end_time], [1, 1], linestyle='-.',
                                     linewidth=2, color=color_str)

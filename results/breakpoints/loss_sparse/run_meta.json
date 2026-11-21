@@ -1,0 +1,49 @@
+{
+  "sweep": "loss_sparse",
+  "levels": [
+    "full/p0.0",
+    "full/p0.1",
+    "full/p0.2",
+    "full/p0.3",
+    "full/p0.4",
+    "full/p0.5",
+    "full/p0.6",
+    "1.5x/p0.0",
+    "1.5x/p0.1",
+    "1.5x/p0.2",
+    "1.5x/p0.3",
+    "1.5x/p0.4",
+    "1.5x/p0.5",
+    "1.5x/p0.6",
+    "1.0x/p0.0",
+    "1.0x/p0.1",
+    "1.0x/p0.2",
+    "1.0x/p0.3",
+    "1.0x/p0.4",
+    "1.0x/p0.5",
+    "1.0x/p0.6"
+  ],
+  "methods": [
+    "global_cbba",
+    "global_ed",
+    "global_ed_refresh",
+    "scoped_ed"
+  ],
+  "sizes": [
+    6,
+    12,
+    24
+  ],
+  "seeds": 50,
+  "refresh_interval": 5,
+  "max_rounds": 500,
+  "started": "2026-11-20 19:33:05",
+  "host": "vanilla.cs.ucl.ac.uk",
+  "cpus": 48,
+  "jobs": 40,
+  "python": "3.13.11",
+  "git": "41d1ceb-dirty",
+  "errors": 0,
+  "finished": "2026-11-20 19:38:42",
+  "elapsed_s": 336.9
+}

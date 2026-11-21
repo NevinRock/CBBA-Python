@@ -1,0 +1,32 @@
+750 jobs over 5 sweep(s) on 40 processes
+[25/750] elapsed=53s
+[50/750] elapsed=90s
+[75/750] elapsed=187s
+[100/750] elapsed=204s
+[125/750] elapsed=217s
+[150/750] elapsed=236s
+[175/750] elapsed=250s
+[200/750] elapsed=268s
+[225/750] elapsed=286s
+[250/750] elapsed=292s
+[275/750] elapsed=297s
+[300/750] elapsed=307s
+[325/750] elapsed=316s
+[350/750] elapsed=319s
+[375/750] elapsed=322s
+[400/750] elapsed=324s
+[425/750] elapsed=326s
+[450/750] elapsed=328s
+[475/750] elapsed=330s
+[500/750] elapsed=331s
+[525/750] elapsed=332s
+[550/750] elapsed=333s
+[575/750] elapsed=335s
+[600/750] elapsed=335s
+[625/750] elapsed=335s
+[650/750] elapsed=336s
+[675/750] elapsed=336s
+[700/750] elapsed=336s
+[725/750] elapsed=336s
+[750/750] elapsed=337s
+{"split": 0, "loss_sparse": 0, "mass_failure": 0, "stale_never": 0, "stale_delay": 0} errors; elapsed 336.9s

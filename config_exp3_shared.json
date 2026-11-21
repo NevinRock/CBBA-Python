@@ -1,0 +1,27 @@
+{
+  "AGENT_TYPES": ["air", "ground"],
+  "TASK_TYPES": ["air_only", "ground_only", "shared"],
+  "COMPATIBILITY": {
+    "air": ["air_only", "shared"],
+    "ground": ["ground_only", "shared"]
+  },
+  "TASK_DEFAULTS": {
+    "air_only": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8},
+    "ground_only": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8},
+    "shared": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8,
+               "DURATION_BY_AGENT_TYPE": {"air": 10, "ground": 5}}
+  },
+  "EXPERIMENT": {
+    "MAP_SIZE_M": 100,
+    "AGENT_SPEED_MPS": {"air": 5, "ground": 5},
+    "TASK_VALUE": 100,
+    "TASK_DISCOUNT": 0.02,
+    "MAX_DEPTH": 4,
+    "TEAM_SIZES": [6, 12, 24],
+    "TASKS_PER_TYPE_PER_ROBOT": 1,
+    "SEEDS": 30,
+    "SCOPE_RADIUS_M": 40,
+    "MAX_LOCAL_AFFECTED": 4,
+    "INCUMBENCY_BONUS": 0.10
+  }
+}
