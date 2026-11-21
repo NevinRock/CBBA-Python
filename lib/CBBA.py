@@ -182,10 +182,14 @@ class CBBA(object):
         time_mat = [[0] * self.num_agents for _ in range(self.num_agents)]
         iter_prev = 0
         done_flag = False
+        # Last round in which any robot's winner or winning-bid list changed.
+        last_change_round = 0
 
         # Main CBBA loop (runs until convergence)
         while not done_flag:
             self.iterations = iter_idx
+
+            state_before = self._consensus_snapshot()
 
             # 1. Communicate
             # Perform consensus on winning agents and bid values (synchronous)
@@ -200,6 +204,9 @@ class CBBA(object):
                 # needed for convergence but will be removed in the final implementation
                 if new_bid_flag:
                     iter_prev = iter_idx
+
+            if self._consensus_snapshot() != state_before:
+                last_change_round = iter_idx
 
             # 3. Convergence Check
             # Determine if the assignment is over (implemented for now, but later this loop will just run forever)
@@ -218,6 +225,14 @@ class CBBA(object):
             else:
                 # Maintain loop
                 iter_idx += 1
+
+        # The allocation has settled once the round after the last change has
+        # shared that change. Later rounds only satisfy the quiet stopping rule.
+        # A run cut off by round_budget while still changing has not settled.
+        self.allocation_settled = last_change_round < self.iterations
+        self.settled_round = (min(last_change_round + 1, self.iterations)
+                              if last_change_round else 0)
+        self.broadcasts_until_settled = sum(self.broadcast_history[:self.settled_round])
 
         # Map path and bundle values to actual task indices
         for n in range(self.num_agents):
@@ -256,6 +271,11 @@ class CBBA(object):
                             for i in range(len(self.scores_list))]
 
         return self.path_list, self.times_list
+
+    def _consensus_snapshot(self):
+        """Immutable copy of every robot's winner and winning-bid lists."""
+        return (tuple(map(tuple, self.winners_list)),
+                tuple(map(tuple, self.winner_bid_list)))
 
     def bundle(self, idx_agent: int):
         """
