@@ -1,0 +1,31 @@
+{
+  "tests_passed": 33,
+  "test_failures": 0,
+  "delivery_regression_tests_added": 5,
+  "historical_pre_run_tests_passed": 28,
+  "independent_audit_passed": true,
+  "independent_audit_checks": 655893,
+  "candidate_only_checkout_tests_passed": 33,
+  "candidate_checkout_has_no_outputs_directory": true,
+  "candidate_checkout_has_no_stage_two_report": true,
+  "candidate_only_audit_and_regeneration_passed": true,
+  "isolated_regenerated_files_bitwise_identical": 16,
+  "numeric_csv_files_unchanged": [
+    "trials.csv",
+    "summary_statistics.csv",
+    "paired_comparisons.csv",
+    "paired_seed_differences.csv",
+    "fallback_summary.csv",
+    "fallback_attempts.csv"
+  ],
+  "all_original_formal_files_unchanged": 418,
+  "existing_algorithm_and_other_experiments_unchanged": true,
+  "markdown_links_checked": 44,
+  "full_270_experiment_rerun": false,
+  "report_regeneration_corrections": [
+    "44, 345, and 1,753 broadcasts for 6, 12, and 24 robots, respectively.",
+    "Removed conversational parameter-authority sentence; retained objective execution-time uncommitted-source provenance"
+  ],
+  "compact_evidence_complete_for_retained_auditor": true,
+  "without_evidence_limit": "CSV/certificate only would not independently verify schedules or consensus; the minimal supplement is audit_evidence.jsonl.gz"
+}

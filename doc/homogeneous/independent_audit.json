@@ -1,0 +1,308 @@
+{
+  "audit_passed": true,
+  "method_rows": 270,
+  "checks_executed": 655893,
+  "checks_by_rule": {
+    "total_270_rows": 1,
+    "no_duplicate_method_row": 270,
+    "all_scales_seeds_methods_exact": 1,
+    "90_snapshot_files": 1,
+    "270_diagnostic_files": 1,
+    "formal_manifest_configuration": 1,
+    "config_matches_preflight": 1,
+    "git_commit_matches_preflight": 1,
+    "preflight_source_unchanged": 13,
+    "run_source_hash_matches": 3,
+    "90_rows_per_scale": 3,
+    "saved_snapshot_sha256": 90,
+    "snapshot_config_seed": 90,
+    "robot_count_ids": 90,
+    "task_count_ids": 90,
+    "positions_match_original_seed_no_resampling": 5040,
+    "two_dimensional_positions": 5040,
+    "homogeneous_robots": 90,
+    "homogeneous_tasks": 90,
+    "initial_owner_matches_paths": 90,
+    "failure_fixed_rule": 90,
+    "initial_full_scope": 90,
+    "common_initial_snapshot": 90,
+    "scope_unique_sorted": 376,
+    "scope_path_agents": 376,
+    "unique_ownership": 646,
+    "known_scoped_tasks": 646,
+    "schedule_agent_keys": 646,
+    "known_agent": 7913,
+    "capacity_four": 7913,
+    "schedule_lengths": 7913,
+    "type_compatibility": 25378,
+    "finite_start_time": 25378,
+    "start_window": 25378,
+    "travel_and_duration": 25378,
+    "episode_completeness_recomputed": 376,
+    "actual_round_count": 376,
+    "episode_broadcast_sum": 376,
+    "finite_episode_cost": 376,
+    "senders_accounting": 6330,
+    "winner_id_mapping": 376,
+    "belief_agent_dimensions": 376,
+    "belief_task_dimensions": 376,
+    "path_bid_agent_dimensions": 376,
+    "path_bid_lengths": 4403,
+    "bid_reward_and_bonus": 14038,
+    "auction_unique_owner": 14060,
+    "winner_matches_path": 222783,
+    "winning_bid_matches_path_bid": 222783,
+    "solver_termination": 376,
+    "episode_reported_diagnostics": 376,
+    "initial_complete": 90,
+    "affected_count_one_to_four": 90,
+    "csv_equals_diagnostic_row": 9450,
+    "paired_identical_input": 270,
+    "row_identity": 270,
+    "paired_failure_and_affected_denominator": 270,
+    "finite_nonnegative_metrics": 6750,
+    "no_missing_key_metric": 1620,
+    "failed_agent_excluded": 556,
+    "unbonused_final_score": 270,
+    "unique_assignment_rate": 270,
+    "final_all_tasks_assigned": 270,
+    "final_flags_recomputed": 270,
+    "failed_agent_not_participant": 286,
+    "standard_broadcasts_every_round": 1562,
+    "scope_cost_accumulation": 1620,
+    "post_cost_excludes_initial_broadcasts": 270,
+    "post_cost_excludes_initial_rounds": 270,
+    "auction_runtime_sum": 270,
+    "total_runtime_decomposition": 270,
+    "controller_includes_all_auctions": 270,
+    "correct_affected_denominator": 270,
+    "initial_cost_separate": 270,
+    "post_auction_count": 270,
+    "local_rate_na_for_global": 180,
+    "global_method_scope": 180,
+    "global_broadcast_policy": 180,
+    "global_all_survivors_tasks": 219,
+    "final_equals_global_consensus_paths": 219,
+    "reported_success_after_independent_checks": 270,
+    "candidates_recomputed_40m": 90,
+    "local_attempt_flag": 90,
+    "no_candidate_precheck": 23,
+    "local_success_recomputed": 90,
+    "global_control_schedule_equality": 90,
+    "eligible_local_attempt_not_skipped": 67,
+    "candidate_union_and_incumbent_scope": 67,
+    "local_radius_matrix": 67,
+    "local_assigned_radius": 494,
+    "local_merge_and_unchanged_nonparticipants": 51,
+    "local_success_scope": 51,
+    "failed_attempt_followed_by_global": 16,
+    "negative_controls_detected": 1
+  },
+  "errors": [],
+  "negative_controls": {
+    "broadcast_count": {
+      "detected": true,
+      "rules": [
+        "episode_broadcast_sum"
+      ]
+    },
+    "winner_record": {
+      "detected": true,
+      "rules": [
+        "winner_matches_path"
+      ]
+    },
+    "winning_bid": {
+      "detected": true,
+      "rules": [
+        "winning_bid_matches_path_bid"
+      ]
+    },
+    "start_window": {
+      "detected": true,
+      "rules": [
+        "bid_reward_and_bonus",
+        "start_window",
+        "travel_and_duration"
+      ]
+    },
+    "bonus_contaminated_reported_score": {
+      "detected": true
+    }
+  },
+  "actual_post_failure_auctions": 286,
+  "actual_initial_auctions": 90,
+  "initial_broadcasts_excluded_total": 10707,
+  "failed_local_attempts": [
+    {
+      "num_robots": 6,
+      "seed": 6,
+      "local_broadcasts": 8,
+      "local_rounds": 6,
+      "local_runtime_seconds": 0.0034589999995660037,
+      "unassigned_tasks": [
+        8
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 8,
+      "local_broadcasts": 6,
+      "local_rounds": 5,
+      "local_runtime_seconds": 0.002151900000171736,
+      "unassigned_tasks": [
+        14
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 14,
+      "local_broadcasts": 11,
+      "local_rounds": 7,
+      "local_runtime_seconds": 0.0031245999998645857,
+      "unassigned_tasks": [
+        9,
+        14
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 16,
+      "local_broadcasts": 11,
+      "local_rounds": 7,
+      "local_runtime_seconds": 0.0030719000023964327,
+      "unassigned_tasks": [
+        0
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 23,
+      "local_broadcasts": 8,
+      "local_rounds": 6,
+      "local_runtime_seconds": 0.002343699998164084,
+      "unassigned_tasks": [
+        2,
+        8,
+        17
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 25,
+      "local_broadcasts": 8,
+      "local_rounds": 6,
+      "local_runtime_seconds": 0.002228500001365319,
+      "unassigned_tasks": [
+        1,
+        2
+      ]
+    },
+    {
+      "num_robots": 6,
+      "seed": 26,
+      "local_broadcasts": 7,
+      "local_rounds": 6,
+      "local_runtime_seconds": 0.001257100000657374,
+      "unassigned_tasks": [
+        9
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 6,
+      "local_broadcasts": 19,
+      "local_rounds": 9,
+      "local_runtime_seconds": 0.00856990000102087,
+      "unassigned_tasks": [
+        10
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 9,
+      "local_broadcasts": 15,
+      "local_rounds": 8,
+      "local_runtime_seconds": 0.005884700000024168,
+      "unassigned_tasks": [
+        2
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 11,
+      "local_broadcasts": 19,
+      "local_rounds": 9,
+      "local_runtime_seconds": 0.010247900001559174,
+      "unassigned_tasks": [
+        32
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 14,
+      "local_broadcasts": 4,
+      "local_rounds": 4,
+      "local_runtime_seconds": 0.0009401999996043742,
+      "unassigned_tasks": [
+        20,
+        28,
+        34
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 20,
+      "local_broadcasts": 39,
+      "local_rounds": 14,
+      "local_runtime_seconds": 0.054014099998312304,
+      "unassigned_tasks": [
+        1
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 27,
+      "local_broadcasts": 23,
+      "local_rounds": 10,
+      "local_runtime_seconds": 0.017834700000094017,
+      "unassigned_tasks": [
+        21
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 28,
+      "local_broadcasts": 15,
+      "local_rounds": 8,
+      "local_runtime_seconds": 0.00578470000255038,
+      "unassigned_tasks": [
+        28
+      ]
+    },
+    {
+      "num_robots": 12,
+      "seed": 29,
+      "local_broadcasts": 44,
+      "local_rounds": 14,
+      "local_runtime_seconds": 0.04628299999967567,
+      "unassigned_tasks": [
+        7
+      ]
+    },
+    {
+      "num_robots": 24,
+      "seed": 1,
+      "local_broadcasts": 28,
+      "local_rounds": 11,
+      "local_runtime_seconds": 0.01215299999967101,
+      "unassigned_tasks": [
+        55
+      ]
+    }
+  ],
+  "consensus_scope": "Every actual auction participant's complete winner/bid records checked against that auction's paths. Local final schedule composes this with unchanged outsider schedules; mission-wide dissemination to outsiders is not simulated or verified.",
+  "raw_evidence_unchanged": true,
+  "audit_source_sha256": "ec1cb4472f95afacda533a02a3cb8214f0c60d67f8a8bd98185ce0d678e5c264",
+  "does_not_import_experiment_or_solver": true
+}

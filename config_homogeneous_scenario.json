@@ -1,0 +1,20 @@
+{
+  "AGENT_TYPES": ["robot"],
+  "TASK_TYPES": ["task"],
+  "COMPATIBILITY": {"robot": ["task"]},
+  "TASK_DEFAULTS": {"task": {"START_TIME": 0, "END_TIME": 240, "DURATION": 8}},
+  "EXPERIMENT": {
+    "SCALES": {"6": 18, "12": 36, "24": 72},
+    "MAP_SIZE": 100,
+    "MAX_DEPTH": 4,
+    "VELOCITY": 5,
+    "TASK_VALUE": 100,
+    "DISCOUNT": 0.02,
+    "INCUMBENCY_BONUS": 0.10,
+    "LOCAL_RADIUS": 40,
+    "MAX_LOCAL_AFFECTED": 4,
+    "SEEDS": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    "FAILURE_SEED_OFFSET": 100000,
+    "AUCTION_ROUND_LIMIT": 10000
+  }
+}
